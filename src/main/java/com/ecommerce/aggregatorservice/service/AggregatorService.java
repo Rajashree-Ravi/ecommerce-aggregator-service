@@ -1,12 +1,10 @@
 package com.ecommerce.aggregatorservice.service;
 
 import com.ecommerce.aggregatorservice.domain.CreateOrderRequestDto;
-import com.ecommerce.sharedlibrary.model.OrderDto;
-
-import reactor.core.publisher.Mono;
+import com.ecommerce.aggregatorservice.domain.OrderDto;
 
 public interface AggregatorService {
 
-	Mono<OrderDto> createOrder(CreateOrderRequestDto requestDto);
+	OrderDto createOrder(CreateOrderRequestDto requestDto);
 
 }

@@ -17,10 +17,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CreateOrderRequestDto {
 
-	@ApiModelProperty(notes = "Unique identifier of the Customer.", required = true)
+	@ApiModelProperty(notes = "Unique identifier of the Customer.", example = "2", required = true)
 	@NotNull
 	private long userId;
-	
+
 	@ApiModelProperty(notes = "Production information.", required = true)
 	@NotEmpty
 	private List<ProductInfoDto> productInfo;

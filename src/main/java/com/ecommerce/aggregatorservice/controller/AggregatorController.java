@@ -8,10 +8,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.aggregatorservice.domain.CreateOrderRequestDto;
 import com.ecommerce.aggregatorservice.service.AggregatorService;
-import com.ecommerce.sharedlibrary.model.OrderDto;
+import com.ecommerce.aggregatorservice.domain.OrderDto;
 
 import io.swagger.annotations.Api;
-import reactor.core.publisher.Mono;
 
 @RestController
 @Api(produces = "application/json", value = "Operations pertaining to aggregation logic in e-commerce application")
@@ -22,7 +21,7 @@ public class AggregatorController {
 	private AggregatorService aggregatorService;
 
 	@PostMapping("/createOrder")
-	public Mono<OrderDto> createOrder(@RequestBody CreateOrderRequestDto requestDto) {
+	public OrderDto createOrder(@RequestBody CreateOrderRequestDto requestDto) {
 		return aggregatorService.createOrder(requestDto);
 	}
 

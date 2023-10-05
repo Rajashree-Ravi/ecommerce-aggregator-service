@@ -16,7 +16,6 @@
 	<properties>
 		<java.version>11</java.version>
 		<springfox.version>3.0.0</springfox.version>
-		<shared.library.version>1.0.0</shared.library.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -64,12 +63,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<!-- Shared library module for e-commerce services -->
-		<dependency>
-			<groupId>com.ecommerce</groupId>
-			<artifactId>shared-library</artifactId>
-			<version>${shared.library.version}</version>
 		</dependency>
 	</dependencies>
 	<build>

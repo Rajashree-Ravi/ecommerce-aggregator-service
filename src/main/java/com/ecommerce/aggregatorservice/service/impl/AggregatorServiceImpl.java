@@ -6,17 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.ecommerce.aggregatorservice.domain.CreateOrderRequestDto;
-import com.ecommerce.aggregatorservice.domain.ProductInfoDto;
 import com.ecommerce.aggregatorservice.service.AggregatorService;
-import com.ecommerce.sharedlibrary.model.CustomerDto;
-import com.ecommerce.sharedlibrary.model.ItemDto;
-import com.ecommerce.sharedlibrary.model.OrderDto;
-import com.ecommerce.sharedlibrary.model.OrderStatus;
-import com.ecommerce.sharedlibrary.model.ProductDto;
+import com.ecommerce.aggregatorservice.domain.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -29,22 +25,21 @@ public class AggregatorServiceImpl implements AggregatorService {
 	private WebClient orderClient = WebClient.create("http://localhost:8080/api/orders");
 
 	@Override
-	public Mono<OrderDto> createOrder(CreateOrderRequestDto requestDto) {
+	public OrderDto createOrder(CreateOrderRequestDto requestDto) {
 
 		OrderDto order = new OrderDto();
 		order.setItems(new ArrayList<>());
+		order.setTotal(new BigDecimal("0.0"));
 
 		// Get customer information
-		Mono<CustomerDto> customer = getCustomer(requestDto.getUserId());
-		customer.subscribe(data -> {
-			order.setUserId(data.getId());
-		});
+		CustomerDto customer = getCustomer(requestDto.getUserId()).block();
+		order.setUserId(customer.getId());
 
 		// Check product availability
 		List<Long> productIds = requestDto.getProductInfo().stream().map(ProductInfoDto::getProductId)
 				.collect(Collectors.toList());
-		Flux<ProductDto> products = fetchProducts(productIds);
-		products.subscribe(product -> {
+		List<ProductDto> products = fetchProducts(productIds).collectList().block();
+		for (ProductDto product : products) {
 			ItemDto item = new ItemDto();
 			long productId = product.getId();
 			ProductInfoDto info = requestDto.getProductInfo().stream().filter(c -> c.getProductId() == productId)
@@ -55,21 +50,27 @@ public class AggregatorServiceImpl implements AggregatorService {
 				item.setProductId(productId);
 				item.setQuantity(quantity);
 				item.setSubTotal(subTotal);
+
+				System.out.println(order.getTotal());
+
+				BigDecimal total = order.getTotal().add(subTotal);
+				order.setTotal(total);
+
+				System.out.println(total);
 			} else {
 				// Handle shortage
 			}
 
 			order.getItems().add(item);
-		});
+		}
 
 		order.setOrderedDate(LocalDate.now());
 		order.setStatus(OrderStatus.PICKUPAVAILABLE);
-		order.setTotal(order.getItems().stream().map(ItemDto::getSubTotal).reduce(BigDecimal.ZERO, BigDecimal::add));
+
+		System.out.println(order.toString());
 
 		// Create Order
-		Mono<OrderDto> savedOrder = createOrderWithUserAndProduct(order);
-
-		// Check Customer
+		OrderDto savedOrder = createOrderWithUserAndProduct(order).block();
 		return savedOrder;
 	}
 
@@ -88,7 +89,9 @@ public class AggregatorServiceImpl implements AggregatorService {
 	}
 
 	public Mono<OrderDto> createOrderWithUserAndProduct(OrderDto order) {
-		Mono<OrderDto> savedOrder = orderClient.post().uri("/").retrieve().bodyToMono(OrderDto.class);
+		Mono<OrderDto> savedOrder = orderClient.post().uri("")
+				.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+				.body(Mono.just(order), OrderDto.class).retrieve().bodyToMono(OrderDto.class);
 		return savedOrder;
 	}
 }
