@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.ecommerce.aggregatorservice.domain.CreateOrderRequestDto;
@@ -20,6 +21,7 @@ import com.ecommerce.sharedlibrary.model.ProductDto;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@Service
 public class AggregatorServiceImpl implements AggregatorService {
 
 	private WebClient customerClient = WebClient.create("http://localhost:8080/api/customers");
